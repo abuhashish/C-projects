@@ -329,7 +329,7 @@ scanf("%d",&choice);
     }
 }
 void deleteall(AVLNode t) {
-
+free(t);
 }
 void delte1(AVLNode t) {
 
