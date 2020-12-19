@@ -32,8 +32,7 @@ void savetable();
 void listlexi();
 void listalla(AVLNode,char);
 void listall(AVLNode,char[]);
-void delte1();
-void deleteall();
+
 
 AVLNode MakeEmpty(AVLNode T )
 {
@@ -314,26 +313,130 @@ AVLNode readfromfile(AVLNode t) {
 void save(AVLNode t) {
 
 }
+void deleteall(AVLNode t) {
+    free(t);
+}
+AVLNode deleteNode(AVLNode root,char key[]) {
+
+    // STEP 1: PERFORM STANDARD BST DELETE
+    if (root == NULL)
+        return root;
+
+    // If the key to be deleted is smaller
+    // than the root's key, then it lies
+    // in left subtree
+    if ( strcmp(key , root->word)<0 )
+        root->Left = deleteNode(root->Left, key);
+
+        // If the key to be deleted is greater
+        // than the root's key, then it lies
+        // in right subtree
+    else if( strcmp(key , root->word)>0  )
+        root->Right = deleteNode(root->Right, key);
+
+        // if key is same as root's key, then
+        // This is the node to be deleted
+    else
+    {
+        // node with only one child or no child
+        if( (root->Left == NULL) ||
+            (root->Right == NULL) )
+        {
+            AVLNode temp = root->Left ?
+                         root->Left :
+                         root->Right;
+
+            // No child case
+            if (temp == NULL)
+            {
+                temp = root;
+                root = NULL;
+            }
+            else // One child case
+                *root = *temp; // Copy the contents of
+            // the non-empty child
+            free(temp);
+        }
+        else
+        {
+            // node with two children: Get the inorder
+            // successor (smallest in the right subtree)
+            AVLNode temp = FindMin(root->Right);
+
+            // Copy the inorder successor's
+            // data to this node
+            root->word = temp->word;
+
+            // Delete the inorder successor
+            root->Right = deleteNode(root->Right,
+                                     temp->word);
+        }
+    }
+
+    // If the tree had only one node
+    // then return
+    if (root == NULL)
+        return root;
+
+    // STEP 2: UPDATE HEIGHT OF THE CURRENT NODE
+    root->Height = 1 + Max(Height(root->Left),
+                           Height(root->Right));
+
+    // STEP 3: GET THE BALANCE FACTOR OF
+    // THIS NODE (to check whether this
+    // node became unbalanced)
+    int balance = (root);
+
+    // If this node becomes unbalanced,
+    // then there are 4 cases
+
+    // Left Left Case
+    if (balance > 1 &&
+        getBalance(root->left) >= 0)
+        return rightRotate(root);
+
+    // Left Right Case
+    if (balance > 1 &&
+        getBalance(root->left) < 0)
+    {
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+
+    // Right Right Case
+    if (balance < -1 &&
+        getBalance(root->right) <= 0)
+        return leftRotate(root);
+
+    // Right Left Case
+    if (balance < -1 &&
+        getBalance(root->right) > 0)
+    {
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+
+    return root;
+
+}
 void deletewords(AVLNode t) {
     int choice;
+    char word[50];
     printf("**************************************\n");
 printf("1.delete 1 word you choose\n");
 printf("2.delete all words\n");
 scanf("%d",&choice);
     switch (choice  ) {
-        case 1:delte1();
+        case 1:printf("please enter the word you want to delet\n");
+               scanf("%s",word);
+               deleteNode(t,word);
             break;
-        case 2:deleteall();
+        case 2:deleteall(t);
             break;
 
     }
 }
-void deleteall(AVLNode t) {
-free(t);
-}
-void delte1(AVLNode t) {
 
-}
 void listwords(AVLNode t) {
 int choice;
 char ch;
