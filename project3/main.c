@@ -203,6 +203,13 @@ AVLNode Insert( char word[],char meaning[50][50],char antonym[],char synonym[], 
     T->Height = Max( Height( T->Left ), Height( T->Right ) ) + 1;
     return T;
 }
+int getBalance(AVLNode N)
+{
+    if (N == NULL)
+        return 0;
+    return Height(N->Left) -
+           Height(N->Right);
+}
 int main()
 {
     char x[50];
@@ -317,103 +324,61 @@ void deleteall(AVLNode t) {
     free(t);
 }
 AVLNode deleteNode(AVLNode root,char key[]) {
-
-    // STEP 1: PERFORM STANDARD BST DELETE
     if (root == NULL)
         return root;
-
-    // If the key to be deleted is smaller
-    // than the root's key, then it lies
-    // in left subtree
     if ( strcmp(key , root->word)<0 )
         root->Left = deleteNode(root->Left, key);
-
-        // If the key to be deleted is greater
-        // than the root's key, then it lies
-        // in right subtree
     else if( strcmp(key , root->word)>0  )
         root->Right = deleteNode(root->Right, key);
-
-        // if key is same as root's key, then
-        // This is the node to be deleted
     else
     {
-        // node with only one child or no child
         if( (root->Left == NULL) ||
             (root->Right == NULL) )
         {
             AVLNode temp = root->Left ?
                          root->Left :
                          root->Right;
-
-            // No child case
             if (temp == NULL)
             {
                 temp = root;
                 root = NULL;
             }
-            else // One child case
-                *root = *temp; // Copy the contents of
-            // the non-empty child
+            else
+                *root = *temp;
             free(temp);
         }
         else
         {
-            // node with two children: Get the inorder
-            // successor (smallest in the right subtree)
             AVLNode temp = FindMin(root->Right);
-
-            // Copy the inorder successor's
-            // data to this node
             root->word = temp->word;
-
-            // Delete the inorder successor
             root->Right = deleteNode(root->Right,
                                      temp->word);
         }
     }
-
-    // If the tree had only one node
-    // then return
     if (root == NULL)
         return root;
-
-    // STEP 2: UPDATE HEIGHT OF THE CURRENT NODE
     root->Height = 1 + Max(Height(root->Left),
                            Height(root->Right));
-
-    // STEP 3: GET THE BALANCE FACTOR OF
-    // THIS NODE (to check whether this
-    // node became unbalanced)
-    int balance = (root);
-
-    // If this node becomes unbalanced,
-    // then there are 4 cases
-
-    // Left Left Case
+    int balance = getBalance(root);
     if (balance > 1 &&
-        getBalance(root->left) >= 0)
-        return rightRotate(root);
-
-    // Left Right Case
+        getBalance(root->Left) >= 0)
+        return SingleRotateWithRight(root);
     if (balance > 1 &&
-        getBalance(root->left) < 0)
+        getBalance(root->Left) < 0)
     {
-        root->left = leftRotate(root->left);
-        return rightRotate(root);
+        root->Left = SingleRotateWithLeft(root->Left);
+        return SingleRotateWithRight(root);
     }
-
-    // Right Right Case
     if (balance < -1 &&
-        getBalance(root->right) <= 0)
-        return leftRotate(root);
+        getBalance(root->Right) <= 0)
+        return SingleRotateWithLeft(root);
 
     // Right Left Case
     if (balance < -1 &&
-        getBalance(root->right) > 0)
+        getBalance(root->Right) > 0)
     {
-        root->right = rightRotate(root->right);
-        return leftRotate(root);
+        root->Right = SingleRotateWithRight(root->Right);
+        return SingleRotateWithLeft(root);
     }
 
     return root;
