@@ -344,10 +344,10 @@ AVLNode deleteFromTree(AVLNode T,char x[]){
     if (T == NULL)                              // if the tree has no nodes to delete, return NULL
         return NULL;
 
-    if (strcmp(x, T -> word) < 0)                    // if the value we want to delete is less than the node we are standing at, go left
+    if (strcmp(x, T -> word) > 0)                    // if the value we want to delete is less than the node we are standing at, go left
         T -> Left = deleteFromTree(T -> Left, x);
 
-    else if (strcmp(x, T -> word) > 0)               // if the value we want to delete is less than the node we are standing at, go right
+    else if (strcmp(x, T -> word) < 0)               // if the value we want to delete is less than the node we are standing at, go right
         T -> Right = deleteFromTree(T -> Right, x);
 
     else if (T -> Left && T -> Right){                  // if we reached the node that we want and it has two children
