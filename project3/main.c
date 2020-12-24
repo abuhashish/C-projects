@@ -20,7 +20,7 @@ struct AVLnode
 AVLNode readfromfile();
 AVLNode insertnew();
 void listwords();
-void deletewords();
+AVLNode deletewords();
 void save();
 void hash();
 void printhasttable();
@@ -32,6 +32,10 @@ void savetable();
 void listlexi();
 void listalla(AVLNode,char);
 void listall(AVLNode,char[]);
+AVLNode RR(AVLNode);
+AVLNode LL(AVLNode);
+AVLNode LR(AVLNode);
+AVLNode RL(AVLNode);
 
 
 AVLNode MakeEmpty(AVLNode T )
@@ -162,6 +166,7 @@ AVLNode DoubleRotateWithRight( AVLNode K1 )
     return SingleRotateWithRight( K1 );
 }
 
+
 AVLNode Insert( char word[],char meaning[50][50],char antonym[],char synonym[], AVLNode T )
 {
     if( T == NULL )
@@ -217,7 +222,7 @@ int main()
     t = MakeEmpty(NULL);
     int choice;
     do {
-        printf("Dictionary \n******************************\n");
+        printf("***************************\nDictionary \n******************************\n");
         printf("1.Read Data from file\n");
         printf("2.Insert new word\n");
         printf("3.Find a word\n");
@@ -240,7 +245,7 @@ int main()
                 break;
               case 4:listwords(t);
                 break;
-            case 5:deletewords(t);
+            case 5:t=deletewords(t);
                 break;
             case 6:save(t);
                 break;
@@ -320,71 +325,73 @@ AVLNode readfromfile(AVLNode t) {
 void save(AVLNode t) {
 
 }
-void deleteall(AVLNode t) {
-    free(t);
+AVLNode deleteTree(AVLNode node)
+{
+    if (node == NULL) return 0;
+
+    /* first delete both subtrees */
+    deleteTree(node->Left);
+    deleteTree(node->Right);
+
+    /* then delete the node */
+    printf( "\n Deleting node: " , node->word);
+    node=NULL;
+    return node;
 }
-AVLNode deleteNode(AVLNode root,char key[]) {
-    if (root == NULL)
-        return root;
-    if ( strcmp(key , root->word)<0 )
-        root->Left = deleteNode(root->Left, key);
-    else if( strcmp(key , root->word)>0  )
-        root->Right = deleteNode(root->Right, key);
-    else
-    {
-        if( (root->Left == NULL) ||
-            (root->Right == NULL) )
-        {
-            AVLNode temp = root->Left ?
-                         root->Left :
-                         root->Right;
-            if (temp == NULL)
-            {
-                temp = root;
-                root = NULL;
-            }
-            else
-                *root = *temp;
-            free(temp);
+
+
+AVLNode deleteFromTree(AVLNode T,char x[]){
+    if (T == NULL)                              // if the tree has no nodes to delete, return NULL
+        return NULL;
+
+    if (strcmp(x, T -> word) < 0)                    // if the value we want to delete is less than the node we are standing at, go left
+        T -> Left = deleteFromTree(T -> Left, x);
+
+    else if (strcmp(x, T -> word) > 0)               // if the value we want to delete is less than the node we are standing at, go right
+        T -> Right = deleteFromTree(T -> Right, x);
+
+    else if (T -> Left && T -> Right){                  // if we reached the node that we want and it has two children
+        AVLNode min = FindMin(T -> Right);                  // find the minimum in the right subtree
+        strcpy(T -> word, min -> word);                 // move the data in min to the node we want to delete
+        T -> Right = deleteFromTree(T -> Right, min ->word);   // delete min from the tree
+    }
+    else{                   // if we reached the node that we want and it has one or zero children
+        AVLNode child;
+
+        if (T -> Left == NULL)      // if the left is NULL, then the child is the right one (even if it is also NULL)
+            child = T -> Right;
+
+        else if (T -> Right == NULL)    // if the right is NULL, then the child is the left one (even if it is also NULL)
+            child = T -> Left;
+
+        free(T);          // delete the node and return child to connect it with the tree
+
+        return child;
+    }
+
+    /*Height(T);        // update the height after deleting a node
+
+    if (!getBalance(T))                        // if the tree is not balanced, make a rotation
+        if ( Height(T -> Left) < Height(T -> Right) ){        // if the tree is right heavy
+
+            if ( Height(T -> Right -> Left) >= Height(T -> Right -> Right) )      // if the tree's right subtree is left heavy
+                return DoubleRotateWithLeft(T);                                                         // perform a double rotation right to left
+            else                                                                        // if the tree's right subtree is right heavy
+                return SingleRotateWithLeft(T);                                                          // perform a single rotation right to left
         }
-        else
-        {
-            AVLNode temp = FindMin(root->Right);
-            root->word = temp->word;
-            root->Right = deleteNode(root->Right,
-                                     temp->word);
-        }
-    }
-    if (root == NULL)
-        return root;
-    root->Height = 1 + Max(Height(root->Left),
-                           Height(root->Right));
-    int balance = getBalance(root);
-    if (balance > 1 &&
-        getBalance(root->Left) >= 0)
-        return SingleRotateWithRight(root);
-    if (balance > 1 &&
-        getBalance(root->Left) < 0)
-    {
-        root->Left = SingleRotateWithLeft(root->Left);
-        return SingleRotateWithRight(root);
-    }
-    if (balance < -1 &&
-        getBalance(root->Right) <= 0)
-        return SingleRotateWithLeft(root);
 
-    // Right Left Case
-    if (balance < -1 &&
-        getBalance(root->Right) > 0)
-    {
-        root->Right = SingleRotateWithRight(root->Right);
-        return SingleRotateWithLeft(root);
+    if ( Height(T -> Left) > Height(T -> Right) ){        // if the tree is left heavy
+
+        if ( Height(T -> Left -> Left) <= Height(T -> Left -> Right) )        // if the tree's left subtree is right heavy
+            return DoubleRotateWithRight(T);                                                          // perform a double rotation left to right
+        else                                                                        // if the tree's left subtree is left heavy
+            return SingleRotateWithRight(T);                                                          // perform a single rotation left to right
     }
 
-    return root;
-
+    return T;*/
 }
-void deletewords(AVLNode t) {
+
+AVLNode deletewords(AVLNode t) {
     int choice;
     char word[50];
     printf("**************************************\n");
@@ -392,14 +399,15 @@ printf("1.delete 1 word you choose\n");
 printf("2.delete all words\n");
 scanf("%d",&choice);
     switch (choice  ) {
-        case 1:printf("please enter the word you want to delet\n");
+        case 1:printf("please enter the word you want to delete?\n");
                scanf("%s",word);
-               deleteNode(t,word);
+               t=deleteFromTree(t,word);
             break;
-        case 2:deleteall(t);
+        case 2:t=deleteTree(t);
             break;
 
     }
+    return t;
 }
 
 void listwords(AVLNode t) {
@@ -415,11 +423,11 @@ scanf("%d",&choice);
         case 1:listlexi(t);
 
             break;
-        case 2:printf("please enter the word you want ");
+        case 2:printf("please enter the word you want \n");
             scanf("%s",&word);
             listall(t,word);
             break;
-        case 3: printf("enter the charecter you want");
+        case 3: printf("enter the charecter you want\n");
             scanf(" %c",&ch);
                listalla(t,ch);
             break;
@@ -435,6 +443,7 @@ void listall(AVLNode t,char word[]) {
         printf("the synonym   is %s and the antonym is  %s\n", t->synonym,t->antonym);
         listall( t->Left ,word);
     }
+
 }
 
 void listalla(AVLNode t,char x) {
@@ -446,6 +455,7 @@ void listalla(AVLNode t,char x) {
         }
         listalla(t->Left,x );
     }
+
 }
 
 void listlexi( AVLNode t)
@@ -456,6 +466,7 @@ void listlexi( AVLNode t)
         printf("%s\n", t->word);
         listlexi( t->Left );
     }
+
 }
 
 AVLNode insertnew(AVLNode t) {
