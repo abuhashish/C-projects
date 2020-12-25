@@ -17,25 +17,8 @@ struct AVLnode
     int Height; //Balance information
 };
 
-AVLNode readfromfile();
-AVLNode insertnew();
-void listwords();
-AVLNode deletewords();
-void save();
-void hash();
-void printhasttable();
-void printtablesize();
-void inserttable();
-void searchtable();
-void deletetable();
-void savetable();
-void listlexi();
-void listalla(AVLNode,char);
-void listall(AVLNode,char[]);
-AVLNode RR(AVLNode);
-AVLNode LL(AVLNode);
-AVLNode LR(AVLNode);
-AVLNode RL(AVLNode);
+
+
 
 
 AVLNode MakeEmpty(AVLNode T )
@@ -165,6 +148,46 @@ AVLNode DoubleRotateWithRight( AVLNode K1 )
     /* Rotate between K1 and K2 */
     return SingleRotateWithRight( K1 );
 }
+AVLNode rightRotate(AVLNode y)
+{
+    AVLNode x = y->Left;
+    AVLNode T2 = x->Right;
+
+    // Perform rotation
+    x->Right = y;
+    y->Left = T2;
+
+    // Update heights
+    y->Height = Max(Height(y->Left),
+                    Height(y->Right)) + 1;
+    x->Height = Max(Height(x->Left),
+                    Height(x->Right)) + 1;
+
+    // Return new root
+    return x;
+}
+
+// A utility function to left
+// rotate subtree rooted with x
+// See the diagram given above.
+AVLNode leftRotate(AVLNode x)
+{
+   AVLNode y = x->Right;
+    AVLNode T2 = y->Left;
+
+    // Perform rotation
+    y->Left = x;
+    x->Right = T2;
+
+    // Update heights
+    x->Height = Max(Height(x->Left),
+                    Height(x->Right)) + 1;
+    y->Height = Max(Height(y->Left),
+                    Height(y->Right)) + 1;
+
+    // Return new root
+    return y;
+}
 
 
 AVLNode Insert( char word[],char meaning[50][50],char antonym[],char synonym[], AVLNode T )
@@ -215,49 +238,7 @@ int getBalance(AVLNode N)
     return Height(N->Left) -
            Height(N->Right);
 }
-int main()
-{
-    char x[50];
-    AVLNode t;
-    t = MakeEmpty(NULL);
-    int choice;
-    do {
-        printf("***************************\nDictionary \n******************************\n");
-        printf("1.Read Data from file\n");
-        printf("2.Insert new word\n");
-        printf("3.Find a word\n");
-        printf("4.List function\n");
-        printf("5.Delete function\n");
-        printf("6.Save\n");
-        printf("7.Hash-Table\n");
-        printf("8.Exit\n");
 
-        scanf("%d",&choice);
-        switch (choice) {
-            case 1:t=readfromfile(t);
-                break;
-            case 2:t=insertnew(t);
-                break;
-            case 3:
-                    printf("please enter the word you are looking for.\n");
-                    scanf("%s",x);
-                 Find(x,t);
-                break;
-              case 4:listwords(t);
-                break;
-            case 5:t=deletewords(t);
-                break;
-            case 6:save(t);
-                break;
-            case 7:hash();
-                break;
-            default:
-                printf("please enter a number between 1 and 8");
-        }
-    }while(choice!=8);
-
-    return 0;
-}
 int calculatemeanings(char item[]){
     int c=0;
     for(int i=0;i<strlen(item);i++){
@@ -364,32 +345,32 @@ AVLNode deleteFromTree(AVLNode T,char x[]){
         else if (T -> Right == NULL)    // if the right is NULL, then the child is the left one (even if it is also NULL)
             child = T -> Left;
 
-        free(T);          // delete the node and return child to connect it with the tree
 
         return child;
     }
 
-    /*Height(T);        // update the height after deleting a node
 
-    if (!getBalance(T))                        // if the tree is not balanced, make a rotation
-        if ( Height(T -> Left) < Height(T -> Right) ){        // if the tree is right heavy
-
-            if ( Height(T -> Right -> Left) >= Height(T -> Right -> Right) )      // if the tree's right subtree is left heavy
-                return DoubleRotateWithLeft(T);                                                         // perform a double rotation right to left
-            else                                                                        // if the tree's right subtree is right heavy
-                return SingleRotateWithLeft(T);                                                          // perform a single rotation right to left
-        }
-
-    if ( Height(T -> Left) > Height(T -> Right) ){        // if the tree is left heavy
-
-        if ( Height(T -> Left -> Left) <= Height(T -> Left -> Right) )        // if the tree's left subtree is right heavy
-            return DoubleRotateWithRight(T);                                                          // perform a double rotation left to right
-        else                                                                        // if the tree's left subtree is left heavy
-            return SingleRotateWithRight(T);                                                          // perform a single rotation left to right
-    }
-
-    return T;*/
 }
+AVLNode balancetree(AVLNode t){
+    if (!t) return t;
+    int balance = getBalance(t);
+    if (balance > 1 && getBalance(t->Left) >= 0)   /* rotateReight */
+        return SingleRotateWithRight(t);
+    if (balance < -1 && getBalance(t->Right) <= 0) /* rotateLeft */
+        return SingleRotateWithLeft(t);
+    if (balance > 1 && getBalance(t->Left) < 0)    /* rotateLeftReight */
+    {
+        t->Left = SingleRotateWithLeft(t->Left);
+        return SingleRotateWithRight(t);
+    }
+    if (balance < -1 && getBalance(t->Right) > 0)  /* rotateReightLeft */
+    {
+        t->Right = SingleRotateWithRight(t->Right);
+        return SingleRotateWithLeft(t);
+    }
+    return t;
+}
+
 
 AVLNode deletewords(AVLNode t) {
     int choice;
@@ -402,6 +383,7 @@ scanf("%d",&choice);
         case 1:printf("please enter the word you want to delete?\n");
                scanf("%s",word);
                t=deleteFromTree(t,word);
+               t=balancetree(t);
             break;
         case 2:t=deleteTree(t);
             break;
@@ -410,30 +392,7 @@ scanf("%d",&choice);
     return t;
 }
 
-void listwords(AVLNode t) {
-int choice;
-char ch;
-char word[50];
-    printf("**************************************\n");
-printf("1.list words in lexicographic order\n");
-printf("2.list all synonym and antonyms of a given word\n");
-printf("3.list all words that starts with the same letter\n");
-scanf("%d",&choice);
-    switch (choice) {
-        case 1:listlexi(t);
 
-            break;
-        case 2:printf("please enter the word you want \n");
-            scanf("%s",&word);
-            listall(t,word);
-            break;
-        case 3: printf("enter the charecter you want\n");
-            scanf(" %c",&ch);
-               listalla(t,ch);
-            break;
-
-    }
-}
 
 void listall(AVLNode t,char word[]) {
     if( t != NULL)
@@ -468,6 +427,30 @@ void listlexi( AVLNode t)
     }
 
 }
+void listwords(AVLNode t) {
+    int choice;
+    char ch;
+    char word[50];
+    printf("**************************************\n");
+    printf("1.list words in lexicographic order\n");
+    printf("2.list all synonym and antonyms of a given word\n");
+    printf("3.list all words that starts with the same letter\n");
+    scanf("%d",&choice);
+    switch (choice) {
+        case 1:listlexi(t);
+
+            break;
+        case 2:printf("please enter the word you want \n");
+            scanf("%s",&word);
+            listall(t,word);
+            break;
+        case 3: printf("enter the charecter you want\n");
+            scanf(" %c",&ch);
+            listalla(t,ch);
+            break;
+
+    }
+}
 
 AVLNode insertnew(AVLNode t) {
     char word[50], meaning[50][50], synonym[50],antonym[50];
@@ -488,6 +471,31 @@ AVLNode insertnew(AVLNode t) {
    return t;
 }
 
+
+
+void savetable() {
+
+}
+
+void deletetable() {
+
+}
+
+void searchtable() {
+
+}
+
+void inserttable() {
+
+}
+
+void printtablesize() {
+
+}
+
+void printhasttable() {
+
+}
 void hash() {
     int choice;
     printf("**************************************");
@@ -514,28 +522,46 @@ void hash() {
 
     }
 }
+int main()
+{
+    char x[50];
+    AVLNode t;
+    t = MakeEmpty(NULL);
+    int choice;
+    do {
+        printf("***************************\nDictionary \n******************************\n");
+        printf("1.Read Data from file\n");
+        printf("2.Insert new word\n");
+        printf("3.Find a word\n");
+        printf("4.List function\n");
+        printf("5.Delete function\n");
+        printf("6.Save\n");
+        printf("7.Hash-Table\n");
+        printf("8.Exit\n");
 
-void savetable() {
+        scanf("%d",&choice);
+        switch (choice) {
+            case 1:t=readfromfile(t);
+                break;
+            case 2:t=insertnew(t);
+                break;
+            case 3:
+                printf("please enter the word you are looking for.\n");
+                scanf("%s",x);
+                Find(x,t);
+                break;
+            case 4:listwords(t);
+                break;
+            case 5:t=deletewords(t);
+                break;
+            case 6:save(t);
+                break;
+            case 7:hash();
+                break;
+            default:
+                printf("please enter a number between 1 and 8");
+        }
+    }while(choice!=8);
 
+    return 0;
 }
-
-void deletetable() {
-
-}
-
-void searchtable() {
-
-}
-
-void inserttable() {
-
-}
-
-void printtablesize() {
-
-}
-
-void printhasttable() {
-
-}
-
