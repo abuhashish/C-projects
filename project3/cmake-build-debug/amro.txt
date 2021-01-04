@@ -1,3 +1,6 @@
 Python: advanced in age, aged, antique / ancient * new
 JAVA: advanced in age, aged, antique / ancient * new
 JavaScript: advanced in age, aged, antique / ancient * new
+C: advanced in age, aged, antique / ancient * new
+HTML: advanced in age, aged, antique / ancient * new
+CSS: advanced in age, aged, antique / ancient * new

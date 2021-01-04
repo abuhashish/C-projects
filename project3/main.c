@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 //Original code provided by the author Mark Allen Wiess.
 //Modified by Dr. Radi Jarrar
+int i=0;
 typedef struct AVLnode *AVLNode;
 
 struct AVLnode
@@ -16,10 +18,21 @@ struct AVLnode
     AVLNode Right;
     int Height; //Balance information
 };
+typedef struct node {
 
+    char delete[20];
+    struct node* next;
+}arr;
+typedef struct hash *hashptr;
 
-
-
+struct hash {
+    char word[50];
+    char meaning[50][50];
+    char synonym[50];
+    char antonym[50];
+    char name[30];
+};
+struct hash Hash_Table[];
 
 AVLNode MakeEmpty(AVLNode T )
 {
@@ -252,6 +265,17 @@ int calculatemeanings(char item[]){
 
   return(c);
 }
+long int find_prime(long int c)
+{
+    long int s=2*c+1;
+    int flag,i;
+    for (i=2;i<=sqrt(s);++i)
+    {
+        if ((s%i)==0)
+            s=find_prime(++c);
+    }
+    return s;
+}
 AVLNode readfromfile(AVLNode t) {
     //Declaring the variables that will be stored
     AVLNode T;
@@ -295,32 +319,16 @@ AVLNode readfromfile(AVLNode t) {
 
        t=Insert(word,meaning,synonym,antonym,t);
 
-
-
     }
 
     fclose(read);
+    
     printf("********* SUCCSESSFUL*********\n");
     return t;
 }
 void save(AVLNode t) {
 
 }
-AVLNode deleteTree(AVLNode node)
-{
-    if (node == NULL) return 0;
-
-    /* first delete both subtrees */
-    deleteTree(node->Left);
-    deleteTree(node->Right);
-
-    /* then delete the node */
-    printf( "\n Deleting node: " , node->word);
-    node=NULL;
-    return node;
-}
-
-
 AVLNode deleteFromTree(AVLNode T,char x[]){
     if (T == NULL)                              // if the tree has no nodes to delete, return NULL
         return NULL;
@@ -351,6 +359,7 @@ AVLNode deleteFromTree(AVLNode T,char x[]){
 
 
 }
+
 AVLNode balancetree(AVLNode t){
     if (!t) return t;
     int balance = getBalance(t);
@@ -370,14 +379,54 @@ AVLNode balancetree(AVLNode t){
     }
     return t;
 }
-
+void DeleteList(struct node* L){
+    struct node* P;
+    struct node* temp;
+    P = L->next;
+    L->next = NULL;
+    while(P != NULL){
+        temp = P->next;
+        free(P);
+        P=temp;
+    }
+}
+struct node* nodeMakeEmpty(struct node* L){
+    if(L != NULL)
+        DeleteList( L );
+    L = (struct node*)malloc(sizeof(struct node));
+    if(L == NULL)
+        printf("Out of memory!\n");
+    L->next = NULL;
+    return L;
+}
+void add(char name[],arr* L,arr* P){
+    arr* temp;
+    temp = (arr*)malloc(sizeof(arr));
+    strcpy(temp->delete,name);
+    temp->next = P->next;
+    P->next = temp;
+}
+void deletealla(AVLNode t,char x,struct node *l1) {
+    if( t != NULL)
+    {
+        deletealla(t->Right,x,l1);
+        if(t->word[0]==x) {
+            add(t->word,l1,l1);
+            //printf("%s\n", t->word);
+        }
+        deletealla(t->Left,x,l1 );
+    }
+}
 
 AVLNode deletewords(AVLNode t) {
     int choice;
     char word[50];
+    char letter;
+    struct node *l1;
+    l1=nodeMakeEmpty(NULL);
     printf("**************************************\n");
 printf("1.delete 1 word you choose\n");
-printf("2.delete all words\n");
+printf("2.delete all words that starts with a specefic charecter.\n");
 scanf("%d",&choice);
     switch (choice  ) {
         case 1:printf("please enter the word you want to delete?\n");
@@ -385,7 +434,16 @@ scanf("%d",&choice);
                t=deleteFromTree(t,word);
                t=balancetree(t);
             break;
-        case 2:t=deleteTree(t);
+
+        case 2:printf("please enter a charecter\n");
+        scanf(" %c",&letter);
+        deletealla(t,letter,l1);
+        l1=l1->next;
+        while(l1!=NULL){
+            t=deleteFromTree(t,l1->delete);
+            t=balancetree(t);
+            l1=l1->next;
+        }
             break;
 
     }
@@ -409,7 +467,7 @@ void listalla(AVLNode t,char x) {
     if( t != NULL)
     {
         listalla(t->Right,x);
-        if(t->word[0]=='P') {
+        if(t->word[0]==x) {
             printf("%s\n", t->word);
         }
         listalla(t->Left,x );
