@@ -1,0 +1,17 @@
+<<patient>
+	name>Ahmed	A. Ali</name>
+	<gender>M</gender>
+	<admissionDate value=01102020/>
+	<birthDate value=05101970 />
+	<diagnosis>Low	blood	pressure</diagnosis>
+	<city>AlBireh</city>
+	<bloodType>A</bloodType>
+</patient><<patient>
+	name>Alma	Mukhles</name>
+	<gender>F</gender>
+	<admissionDate value=2212019/>
+	<birthDate value=01012000 />
+	<diagnosis>Ear	infection</diagnosis>
+	<city>Nablus</city>
+	<bloodType>B+</bloodType>
+</patient>
